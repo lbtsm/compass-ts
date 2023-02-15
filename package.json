@@ -1,0 +1,24 @@
+{
+  "name": "compass-ts",
+  "version": "1.0.0",
+  "description": "compass-ts version",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lbtsm/compass-ts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lbtsm/compass-ts/issues"
+  },
+  "homepage": "https://github.com/lbtsm/compass-ts#readme",
+  "devDependencies": {
+    "@types/node": "^18.13.0",
+    "tslint": "^6.1.3",
+    "typescript": "^4.9.5"
+  }
+}
