@@ -110,7 +110,7 @@ export class SolChain {
               // let currentDate = new Date();
               var l:Log = {
                 ChainId: this.cfg.id,
-                EventId: 51,
+                EventId: 98,
                 ProjectId: 1,
                 TxHash: txHash,
                 ContractAddres: this.cfg.opts.mcs,
