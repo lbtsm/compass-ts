@@ -30,6 +30,7 @@ export class SolChain {
           cluster = "mainnet-beta"
           break
       }
+      console.log("web3.clusterApiUrl(cluster) ----------------- ", web3.clusterApiUrl(cluster))
       let connection = new web3.Connection(web3.clusterApiUrl(cluster), "confirmed");
       let constract  = new PublicKey(this.cfg.opts.mcs)
       let begin :string = this.cfg.opts.startBlock
@@ -44,7 +45,7 @@ export class SolChain {
           await delay(3000)
           console.log("No new transaction, is waiting...")
           continue
-        } 
+        }
         for (let index = signs.length-1; index >= 0; index--) {
           let txHash = signs[index].signature
           const trx = await connection.getTransaction(txHash, {
@@ -111,7 +112,7 @@ export class SolChain {
               var l:Log = {
                 ChainId: this.cfg.id,
                 EventId: 98,
-                ProjectId: 1,
+                ProjectId: 7,
                 TxHash: txHash,
                 ContractAddres: this.cfg.opts.mcs,
                 Topic: "crossOut",
