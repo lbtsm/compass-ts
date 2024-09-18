@@ -75,24 +75,25 @@ export class SolChain {
               }
               console.log("Find tx", txHash, "slot", trx?.slot, "blockTime",trx?.blockTime)
               const orderId = Buffer.from(Uint8Array.from(event.data.orderRecord.orderId)).toString("hex");
-              // console.log("event.name ------------------- ", event.name)
-              // console.log("orderId ------------------ ", orderId)
-              // console.log(
-              //     `
-              //     CrossFinishEvent: orderId[${orderId}],
-              //     tokenAmount[${event.data.orderRecord.tokenAmount}],
-              //     from[${event.data.orderRecord.from}],
-              //     fromToken[${event.data.orderRecord.fromToken}],
-              //     toToken[${event.data.orderRecord.toToken}],
-              //     swapTokenOutMinAmountOut[${event.data.orderRecord.swapTokenOutMinAmountOut}],
-              //     minAmountOut[${event.data.orderRecord.minAmountOut}], 
-              //     swapTokenOutBeforeBalance[${event.data.orderRecord.swapTokenOutBeforeBalance}], 
-              //     afterBalance[${event.data.afterBalance}],
-              //     receiver[${event.data.orderRecord.receiver}],
-              //     toChain[${event.data.orderRecord.toChainId}],
-              //     fromChainId[${event.data.orderRecord.fromChainId}]
-              //     `
-              // );
+              console.log("event.name ------------------- ", event.name)
+              console.log("orderId ------------------ ", orderId)
+              console.log(
+                  `
+                  CrossFinishEvent: orderId[${orderId}],
+                  amount_out[${event.data.amountOut}],
+                  tokenAmount[${event.data.orderRecord.tokenAmount}],
+                  from[${event.data.orderRecord.from}],
+                  fromToken[${event.data.orderRecord.fromToken}],
+                  toToken[${event.data.orderRecord.toToken}],
+                  swapTokenOutMinAmountOut[${event.data.orderRecord.swapTokenOutMinAmountOut}],
+                  minAmountOut[${event.data.orderRecord.minAmountOut}], 
+                  swapTokenOutBeforeBalance[${event.data.orderRecord.swapTokenOutBeforeBalance}], 
+                  afterBalance[${event.data.afterBalance}],
+                  receiver[${event.data.orderRecord.receiver}],
+                  toChain[${event.data.orderRecord.toChainId}],
+                  fromChainId[${event.data.orderRecord.fromChainId}]
+                  `
+              );
               let data = new Map()
               data.set("orderId", orderId)
               data.set("tokenAmount", event.data.orderRecord.tokenAmount)

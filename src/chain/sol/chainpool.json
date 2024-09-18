@@ -784,6 +784,11 @@
           "index": false
         },
         {
+          "name": "amountOut",
+          "type": "u64",
+          "index": false
+        },
+        {
           "name": "orderRecord",
           "type": {
             "defined": "OrderRecordEvent"
