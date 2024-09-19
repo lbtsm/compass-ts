@@ -107,6 +107,7 @@ export class SolChain {
               data.set("receiver", event.data.orderRecord.receiver)
               data.set("toChain", event.data.orderRecord.toChainId)
               data.set("fromChainId", event.data.orderRecord.fromChainId)
+              data.set("amountOut", event.data.amountOut)
               let dataStr = JSON.stringify(Object.fromEntries(data))
               let blcokTime:number = trx?.blockTime!;
               // let currentDate = new Date();
