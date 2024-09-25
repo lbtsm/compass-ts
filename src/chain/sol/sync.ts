@@ -21,17 +21,8 @@ export class SolChain {
     }
 
     async sync() {
-      let cluster:web3.Cluster = "devnet";
-      switch  (this.cfg.endpoint) {
-        case "testnet":
-          cluster = "testnet"
-          break
-        case "main":
-          cluster = "mainnet-beta"
-          break
-      }
-      console.log("web3.clusterApiUrl(cluster) ----------------- ", web3.clusterApiUrl(cluster))
-      let connection = new web3.Connection(web3.clusterApiUrl(cluster), "confirmed");
+      console.log("web3.clusterApiUrl(cluster) ----------------- ", this.cfg.endpoint)
+      let connection = new web3.Connection(this.cfg.endpoint, "confirmed");
       let constract  = new PublicKey(this.cfg.opts.mcs)
       let begin :string = this.cfg.opts.startBlock
       const idl = require("../../../src/chain/sol/chainpool.json");
