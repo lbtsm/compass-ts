@@ -34,7 +34,6 @@ export class SolChain {
         })
         if (signs.length == 0) {
           await delay(3000)
-          console.log("No new transaction, is waiting...")
           continue
         }
         for (let index = signs.length-1; index >= 0; index--) {
