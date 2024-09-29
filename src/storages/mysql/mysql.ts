@@ -42,15 +42,15 @@ export function queryEvent() {
 
 export const insertMos = (log: Log, callback: Function) => {
   const insertStr = "INSERT INTO mos (chain_id, event_id, project_id, tx_hash, contract_address, topic, block_number, block_hash, tx_index, log_index, log_data, tx_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  // const insertStr = "INSERT INTO mos(chain_id, event_id) VALUES (?, ?)"
-  console.log("log.ChainId ---------------------- ", log.ChainId)
-  //
   db.query(
     insertStr,
     [log.ChainId, log.EventId, log.ProjectId,  log.TxHash, log.ContractAddres, log.Topic, log.BlockNumber, 
       log.BlockHash, log.TxIndex, log.LogIndex, log.LogData, log.TxTimestamp],
     (err, result) => {
-      if (err) {callback(err)};
+      if (err) {
+        callback(err)
+        return
+      };
 
       const insertId = (<ResultSetHeader> result).insertId;
       callback(null, insertId);
