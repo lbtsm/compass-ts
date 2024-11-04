@@ -28,8 +28,8 @@ export class SolChain {
       let begin :string = this.cfg.opts.startBlock
       const idl = require("../../../src/chain/sol/chainpool.json");
       const programId = new PublicKey(idl.metadata.address);
-      try {
-        for (;;) {
+      for (;;) {
+        try {
           let signs = await connection.getSignaturesForAddress(constract, {
             until: begin,
             limit:100,
@@ -128,11 +128,10 @@ export class SolChain {
       
               begin = signs[index].signature;
             }
+        } catch (err){
+          console.log("solana catch err", err)
         }
-      } catch (err){
-        console.log("solana catch err", err)
       }
-      
   }
 }
 
