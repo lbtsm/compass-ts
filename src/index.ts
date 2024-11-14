@@ -26,7 +26,7 @@ async function main() {
   console.log("Parse config scuuess")
   // step3: init storage
   initDb(cfg.storages[0].user,cfg.storages[0].psw, cfg.storages[0].db,  cfg.storages[0].host, cfg.storages[0].port)
-  console.log("Init db success")
+  console.log("Init db pool success")
   // step4: init chain
   let chains = initChain(cfg)
   console.log("Init chains success")
