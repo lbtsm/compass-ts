@@ -12,7 +12,6 @@ export function initDb(user:string, psw:string, database:string, host:string, po
       database:database,
       host:host,
       port:port,
-      connectTimeout:60,
     })
 }
 
