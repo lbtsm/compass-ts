@@ -36,7 +36,7 @@ export class SolChain {
       for (;;) {
         try {
           let signs = await connection.getSignaturesForAddress(constract, {
-            until: begin, 
+            until: begin,
             limit:10,
           })
 
@@ -66,14 +66,14 @@ export class SolChain {
               }
               this.crossOut(event, haveBegin, haveFinish,txHash, trx)
             }
-            // // messageOut
-            // let outLogs:string[] = trx?.meta?.logMessages!;
-            // const messageOutEp = new EventParser(outProgramId, new BorshCoder(messoutIdl));
-            // const outEvents = messageOutEp.parseLogs(outLogs);
-            // for (let event of outEvents) {
-            //   await this.messageOut(event, txHash, trx)
-            // }
-      
+             // messageOut
+            let outLogs:string[] = trx?.meta?.logMessages!;
+             const messageOutEp = new EventParser(outProgramId, new BorshCoder(messoutIdl));
+             const outEvents = messageOutEp.parseLogs(outLogs);
+             for (let event of outEvents) {
+             this.messageOut(event, txHash, trx)
+             }
+
             begin = signs[index].signature;
           }
         } catch (err){
@@ -84,7 +84,7 @@ export class SolChain {
         }
       }
     }
-  
+
     crossOut(event:Event, haveBegin:boolean, haveFinish:boolean, txHash:string, trx:VersionedTransactionResponse|null) {
       if (!haveBegin || !haveFinish) {
         return
@@ -107,8 +107,8 @@ export class SolChain {
           fromToken[${event.data.orderRecord.fromToken}],
           toToken[${event.data.orderRecord.toToken}],
           swapTokenOutMinAmountOut[${event.data.orderRecord.swapTokenOutMinAmountOut}],
-          minAmountOut[${event.data.orderRecord.minAmountOut}], 
-          swapTokenOutBeforeBalance[${event.data.orderRecord.swapTokenOutBeforeBalance}], 
+          minAmountOut[${event.data.orderRecord.minAmountOut}],
+          swapTokenOutBeforeBalance[${event.data.orderRecord.swapTokenOutBeforeBalance}],
           afterBalance[${event.data.afterBalance}],
           receiver[${event.data.orderRecord.receiver}],
           toChain[${event.data.orderRecord.toChainId}],
@@ -152,74 +152,74 @@ export class SolChain {
         console.log("CrossOut Insert Success, txHash:", txHash, "id:", id);
       })
     }
-  
-    // messageOut(event:Event, txHash:string, trx:VersionedTransactionResponse|null) {
-    //   if (event.name != "MessageOutEvent") {
-    //     console.log("------------------ event.name ", event.name)
-    //     return
-    //   }
 
-    //   const orderId = Buffer.from(Uint8Array.from(event.data.orderId)).toString("hex");
-    //   const mos = Buffer.from(Uint8Array.from(event.data.mos)).toString("hex");
-    //   const to = Buffer.from(Uint8Array.from(event.data.to)).toString("hex");
-    //   const swapData = Buffer.from(Uint8Array.from(event.data.swapData)).toString("hex");
+    messageOut(event:Event, txHash:string, trx:VersionedTransactionResponse|null) {
+       if (event.name != "MessageOutEvent") {
+         console.log("------------------ event.name ", event.name)
+         return
+       }
 
-    //   const token = Buffer.from(new PublicKey(event.data.token).toBytes()).toString("hex");
-    //   const initiator = Buffer.from(new PublicKey(event.data.initiator).toBytes()).toString("hex");
-    //   const from = Buffer.from(new PublicKey(event.data.from).toBytes()).toString("hex");
+       const orderId = Buffer.from(Uint8Array.from(event.data.orderId)).toString("hex");
+       const mos = Buffer.from(Uint8Array.from(event.data.mos)).toString("hex");
+      const to = Buffer.from(Uint8Array.from(event.data.to)).toString("hex");
+       const swapData = Buffer.from(Uint8Array.from(event.data.swapData)).toString("hex");
 
-    //   console.log("Find MessageOut tx", txHash, "slot", trx?.slot, "blockTime",trx?.blockTime)
-    //       console.log(`
-    //          MessageOutEvent: orderId[${orderId}],
-    //          MessageOutEvent: relay[${event.data.relay}],
-    //          MessageOutEvent: messageType[${event.data.messageType}],
-    //          MessageOutEvent: fromChain[${event.data.fromChain}],
-    //          MessageOutEvent: toChain[${event.data.toChain}],
-    //          MessageOutEvent: mos[${mos}],
-    //          MessageOutEvent: token[${event.data.token}],
-    //          MessageOutEvent: initiator[${event.data.initiator}],
-    //          MessageOutEvent: from[${event.data.from}],
-    //          MessageOutEvent: to[${to}],
-    //          MessageOutEvent: amount[${event.data.amount}],
-    //          MessageOutEvent: gasLimit[${event.data.gasLimit}],
-    //          MessageOutEvent: swapData[${event.data.swapData}]
-    //          `)
-    //   let data = new Map()
-    //   data.set("orderId", orderId)
-    //   data.set("relay", event.data.relay)
-    //   data.set("messageType", event.data.messageType)
-    //   data.set("fromChain", event.data.fromChain)
-    //   data.set("toChain", event.data.toChain)
-    //   data.set("mos", mos)
-    //   data.set("token", token)
-    //   data.set("initiator", initiator)
-    //   data.set("from", from)
-    //   data.set("to", to)
-    //   data.set("amount", event.data.amount)
-    //   data.set("gasLimit", event.data.gasLimit)
-    //   data.set("swapData", swapData)
-    //   let dataStr = JSON.stringify(Object.fromEntries(data))
-    //   var l:Log = {
-    //     ChainId: this.cfg.id,
-    //     EventId: 110,
-    //     ProjectId: 1,
-    //     TxHash: txHash,
-    //     ContractAddres: this.cfg.opts.mcs,
-    //     Topic: "MessageOutEvent",
-    //     BlockNumber: trx?.slot || 0,
-    //     BlockHash:"",
-    //     TxIndex: 1,
-    //     LogIndex: 1,
-    //     LogData: dataStr,
-    //     TxTimestamp:  trx?.blockTime || 0,
-    //   }
-    //   insertMos(l, (err:Error, id: number) => {
-    //     if (err) {
-    //       console.log("MessageOut Insert Failed, txHash:", txHash, "err:", err);
-    //       return
-    //     }
-    //     console.log("MessageOut Insert Success, txHash:", txHash, "id:", id);
-    //   })
-    // }
-  
+       const token = Buffer.from(new PublicKey(event.data.token).toBytes()).toString("hex");
+       const initiator = Buffer.from(new PublicKey(event.data.initiator).toBytes()).toString("hex");
+       const from = Buffer.from(new PublicKey(event.data.from).toBytes()).toString("hex");
+
+       console.log("Find MessageOut tx", txHash, "slot", trx?.slot, "blockTime",trx?.blockTime)
+           console.log(`
+              MessageOutEvent: orderId[${orderId}],
+              MessageOutEvent: relay[${event.data.relay}],
+              MessageOutEvent: messageType[${event.data.messageType}],
+              MessageOutEvent: fromChain[${event.data.fromChain}],
+              MessageOutEvent: toChain[${event.data.toChain}],
+              MessageOutEvent: mos[${mos}],
+              MessageOutEvent: token[${event.data.token}],
+              MessageOutEvent: initiator[${event.data.initiator}],
+              MessageOutEvent: from[${event.data.from}],
+              MessageOutEvent: to[${to}],
+              MessageOutEvent: amount[${event.data.amount}],
+              MessageOutEvent: gasLimit[${event.data.gasLimit}],
+              MessageOutEvent: swapData[${event.data.swapData}]
+              `)
+       let data = new Map()
+       data.set("orderId", orderId)
+       data.set("relay", event.data.relay)
+       data.set("messageType", event.data.messageType)
+       data.set("fromChain", event.data.fromChain)
+       data.set("toChain", event.data.toChain)
+       data.set("mos", mos)
+       data.set("token", token)
+       data.set("initiator", initiator)
+       data.set("from", from)
+       data.set("to", to)
+       data.set("amount", event.data.amount)
+       data.set("gasLimit", event.data.gasLimit)
+       data.set("swapData", swapData)
+       let dataStr = JSON.stringify(Object.fromEntries(data))
+       var l:Log = {
+         ChainId: this.cfg.id,
+         EventId: 110,
+         ProjectId: 1,
+         TxHash: txHash,
+         ContractAddres: this.cfg.opts.mcs,
+         Topic: "MessageOutEvent",
+         BlockNumber: trx?.slot || 0,
+         BlockHash:"",
+         TxIndex: 1,
+         LogIndex: 1,
+         LogData: dataStr,
+         TxTimestamp:  trx?.blockTime || 0,
+       }
+       insertMos(l, (err:Error, id: number) => {
+         if (err) {
+           console.log("MessageOut Insert Failed, txHash:", txHash, "err:", err);
+           return
+         }
+         console.log("MessageOut Insert Success, txHash:", txHash, "id:", id);
+       })
+    }
+
   }
