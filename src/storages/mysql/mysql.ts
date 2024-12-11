@@ -18,6 +18,7 @@ export function initDb(user:string, psw:string, database:string, host:string, po
 export const insertMos = (log: Log, callback: Function) => {
     pool.getConnection((error, connection) => {
       if (error) {
+        connection.release();
         callback(error)
       } else {
         const insertStr = "INSERT INTO mos (chain_id, event_id, project_id, tx_hash, contract_address, topic, block_number, block_hash, tx_index, log_index, log_data, tx_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -27,13 +28,12 @@ export const insertMos = (log: Log, callback: Function) => {
           (error, result) => {
           if (error) {
             callback(error)
-            return 
           } else {
             const insertId = (<ResultSetHeader> result).insertId;
             callback(null, insertId)
           }
-          connection.release(); // 释放该链接，把该链接放回池里供其他人使用
         });
       }
+      connection.release(); // 释放该链接，把该链接放回池里供其他人使用
     });
 };
