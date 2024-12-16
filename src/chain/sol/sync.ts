@@ -35,6 +35,7 @@ export class SolChain {
       const outProgramId = new PublicKey(messoutIdl.metadata.address);
       for (;;) {
         try {
+          console.log("begin ------------------ ", begin)
           let signs = await connection.getSignaturesForAddress(constract, {
             until: begin,
             limit:10,
@@ -46,6 +47,7 @@ export class SolChain {
           }
           for (let index = signs.length-1; index >= 0; index--) {
             let txHash = signs[index].signature
+            console.log("txHash --------------------------- ", txHash)
             const trx = await connection.getTransaction(txHash, {
                 commitment: "confirmed",
                 maxSupportedTransactionVersion:1,
@@ -81,11 +83,13 @@ export class SolChain {
           await delay(3000)
         } finally {
           console.log("solana finally")
+          await delay(3000)
         }
       }
     }
 
     crossOut(event:Event, haveBegin:boolean, haveFinish:boolean, txHash:string, trx:VersionedTransactionResponse|null) {
+      console.log(" haveBegin ----", haveBegin, " haveFinish ", haveFinish)
       if (!haveBegin || !haveFinish) {
         return
       }

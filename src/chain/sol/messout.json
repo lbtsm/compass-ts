@@ -13,6 +13,11 @@
       "value": "100"
     },
     {
+      "name": "MESSAGE_HASH_SEED",
+      "type": "bytes",
+      "value": "[77, 101, 115, 115, 97, 103, 101, 72, 97, 115, 104]"
+    },
+    {
       "name": "MESSAGE_MAX_LEN",
       "type": "u16",
       "value": "1024"
@@ -40,7 +45,7 @@
     {
       "name": "PAYLOAD_MAX_LEN",
       "type": "u16",
-      "value": "1024"
+      "value": "256"
     },
     {
       "name": "RELAYERS_MAX_LEN",
@@ -161,6 +166,11 @@
         },
         {
           "name": "mosConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "msg",
           "isMut": true,
           "isSigner": false
         },
@@ -560,6 +570,27 @@
           }
         }
       ]
+    },
+    {
+      "name": "messageGet",
+      "accounts": [
+        {
+          "name": "msg",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "MessagePayloadGetParams"
+          }
+        }
+      ],
+      "returns": {
+        "defined": "Payload"
+      }
     }
   ],
   "accounts": [
@@ -609,9 +640,7 @@
           },
           {
             "name": "message",
-            "type": {
-              "defined": "MessagePayload"
-            }
+            "type": "bytes"
           },
           {
             "name": "bump",
@@ -633,10 +662,6 @@
                 32
               ]
             }
-          },
-          {
-            "name": "message",
-            "type": "bytes"
           },
           {
             "name": "bump",
@@ -686,12 +711,16 @@
             }
           },
           {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
             "name": "mapoMos",
             "type": "bytes"
           },
           {
-            "name": "bump",
-            "type": "u8"
+            "name": "gasLimit",
+            "type": "u64"
           }
         ]
       }
@@ -729,6 +758,10 @@
           {
             "name": "mapoMos",
             "type": "bytes"
+          },
+          {
+            "name": "gasLimit",
+            "type": "u64"
           },
           {
             "name": "threshold",
@@ -776,6 +809,10 @@
           {
             "name": "mapoMos",
             "type": "bytes"
+          },
+          {
+            "name": "gasLimit",
+            "type": "u64"
           },
           {
             "name": "threshold",
@@ -846,6 +883,15 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "orderId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
             "name": "amount",
             "type": "u64"
           }
@@ -879,6 +925,10 @@
           {
             "name": "value",
             "type": "u64"
+          },
+          {
+            "name": "dataLen",
+            "type": "u16"
           }
         ]
       }
@@ -905,6 +955,23 @@
             "name": "order",
             "type": {
               "defined": "RouteOrder"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "MessagePayloadGetParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "orderId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
             }
           }
         ]
@@ -945,6 +1012,10 @@
                 ]
               }
             }
+          },
+          {
+            "name": "dataLen",
+            "type": "u16"
           }
         ]
       }
@@ -986,70 +1057,29 @@
       }
     },
     {
-      "name": "MessagePayload",
+      "name": "Payload",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "version",
+            "name": "crossTokenLen",
             "type": "u8"
           },
           {
-            "name": "relay",
+            "name": "crossAddressLen",
             "type": "u8"
           },
           {
-            "name": "tokenLen",
-            "type": "u8"
-          },
-          {
-            "name": "mosLen",
-            "type": "u8"
-          },
-          {
-            "name": "fromLen",
-            "type": "u8"
-          },
-          {
-            "name": "toLen",
-            "type": "u8"
-          },
-          {
-            "name": "payloadLen",
-            "type": "u16"
-          },
-          {
-            "name": "reserved",
-            "type": {
-              "array": [
-                "u8",
-                8
-              ]
-            }
-          },
-          {
-            "name": "tokenAmount",
-            "type": "u64"
-          },
-          {
-            "name": "tokenAddress",
-            "type": "bytes"
-          },
-          {
-            "name": "mosTarget",
-            "type": "bytes"
-          },
-          {
-            "name": "fromAddress",
-            "type": "bytes"
+            "name": "toToken",
+            "type": "publicKey"
           },
           {
             "name": "toAddress",
-            "type": "bytes"
+            "type": "publicKey"
           },
           {
-            "name": "payload",
-            "type": "bytes"
+            "name": "minAmountOut",
+            "type": "u64"
           }
         ]
       }
@@ -1388,9 +1418,13 @@
     {
       "code": 6022,
       "name": "InvalidReceiptRoot"
+    },
+    {
+      "code": 6023,
+      "name": "InvalidMessageHash"
     }
   ],
   "metadata": {
-    "address": "5cafqbeMPibjx3WZhURfFQQsp87GUHRizuMoZPyx1trf"
+    "address": "9morDALTT4UKNtJtvv6bmQ4sp5Z19Ux7qPQUokzBozkR"
   }
 }
