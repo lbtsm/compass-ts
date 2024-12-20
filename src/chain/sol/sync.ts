@@ -89,7 +89,6 @@ export class SolChain {
     }
 
     crossOut(event:Event, haveBegin:boolean, haveFinish:boolean, txHash:string, trx:VersionedTransactionResponse|null) {
-      console.log(" haveBegin ----", haveBegin, " haveFinish ", haveFinish)
       if (!haveBegin || !haveFinish) {
         return
       }
