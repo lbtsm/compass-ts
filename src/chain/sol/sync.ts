@@ -70,11 +70,11 @@ export class SolChain {
             }
              // messageOut
             let outLogs:string[] = trx?.meta?.logMessages!;
-             const messageOutEp = new EventParser(outProgramId, new BorshCoder(messoutIdl));
-             const outEvents = messageOutEp.parseLogs(outLogs);
-             for (let event of outEvents) {
+            const messageOutEp = new EventParser(outProgramId, new BorshCoder(messoutIdl));
+            const outEvents = messageOutEp.parseLogs(outLogs);
+            for (let event of outEvents) {
              this.messageOut(event, txHash, trx)
-             }
+            }
 
             begin = signs[index].signature;
           }
@@ -82,7 +82,7 @@ export class SolChain {
           console.log("solana catch err", err)
           await delay(3000)
         } finally {
-          console.log("solana finally")
+          console.log("solana filter is running")
           await delay(3000)
         }
       }
@@ -110,6 +110,7 @@ export class SolChain {
           from[${event.data.orderRecord.from}],
           fromToken[${event.data.orderRecord.fromToken}],
           toToken[${event.data.orderRecord.toToken}],
+          swapTokenOut[${event.data.orderRecord.swapTokenOut}],
           swapTokenOutMinAmountOut[${event.data.orderRecord.swapTokenOutMinAmountOut}],
           minAmountOut[${event.data.orderRecord.minAmountOut}],
           swapTokenOutBeforeBalance[${event.data.orderRecord.swapTokenOutBeforeBalance}],
@@ -125,6 +126,7 @@ export class SolChain {
       data.set("from", event.data.orderRecord.from)
       data.set("fromToken", event.data.orderRecord.fromToken)
       data.set("toToken", event.data.orderRecord.toToken)
+      data.set("swapTokenOut", event.data.orderRecord.swapTokenOut)
       data.set("swapTokenOutMinAmountOut", event.data.orderRecord.swapTokenOutMinAmountOut)
       data.set("minAmountOut", event.data.orderRecord.minAmountOut)
       data.set("swapTokenOutBeforeBalance", event.data.orderRecord.swapTokenOutBeforeBalance)
@@ -163,31 +165,31 @@ export class SolChain {
          return
        }
 
-       const orderId = Buffer.from(Uint8Array.from(event.data.orderId)).toString("hex");
-       const mos = Buffer.from(Uint8Array.from(event.data.mos)).toString("hex");
+      const orderId = Buffer.from(Uint8Array.from(event.data.orderId)).toString("hex");
+      const mos = Buffer.from(Uint8Array.from(event.data.mos)).toString("hex");
       const to = Buffer.from(Uint8Array.from(event.data.to)).toString("hex");
-       const swapData = Buffer.from(Uint8Array.from(event.data.swapData)).toString("hex");
+      const swapData = Buffer.from(Uint8Array.from(event.data.swapData)).toString("hex");
 
-       const token = Buffer.from(new PublicKey(event.data.token).toBytes()).toString("hex");
-       const initiator = Buffer.from(new PublicKey(event.data.initiator).toBytes()).toString("hex");
-       const from = Buffer.from(new PublicKey(event.data.from).toBytes()).toString("hex");
+      const token = Buffer.from(new PublicKey(event.data.token).toBytes()).toString("hex");
+      const initiator = Buffer.from(new PublicKey(event.data.initiator).toBytes()).toString("hex");
+      const from = Buffer.from(new PublicKey(event.data.from).toBytes()).toString("hex");
 
-       console.log("Find MessageOut tx", txHash, "slot", trx?.slot, "blockTime",trx?.blockTime)
-           console.log(`
-              MessageOutEvent: orderId[${orderId}],
-              MessageOutEvent: relay[${event.data.relay}],
-              MessageOutEvent: messageType[${event.data.messageType}],
-              MessageOutEvent: fromChain[${event.data.fromChain}],
-              MessageOutEvent: toChain[${event.data.toChain}],
-              MessageOutEvent: mos[${mos}],
-              MessageOutEvent: token[${event.data.token}],
-              MessageOutEvent: initiator[${event.data.initiator}],
-              MessageOutEvent: from[${event.data.from}],
-              MessageOutEvent: to[${to}],
-              MessageOutEvent: amount[${event.data.amount}],
-              MessageOutEvent: gasLimit[${event.data.gasLimit}],
-              MessageOutEvent: swapData[${event.data.swapData}]
-              `)
+      console.log("Find MessageOut tx", txHash, "slot", trx?.slot, "blockTime",trx?.blockTime)
+      console.log(`
+        MessageOutEvent: orderId[${orderId}],
+        MessageOutEvent: relay[${event.data.relay}],
+        MessageOutEvent: messageType[${event.data.messageType}],
+        MessageOutEvent: fromChain[${event.data.fromChain}],
+        MessageOutEvent: toChain[${event.data.toChain}],
+        MessageOutEvent: mos[${mos}],
+        MessageOutEvent: token[${event.data.token}],
+        MessageOutEvent: initiator[${event.data.initiator}],
+        MessageOutEvent: from[${event.data.from}],
+        MessageOutEvent: to[${to}],
+        MessageOutEvent: amount[${event.data.amount}],
+        MessageOutEvent: gasLimit[${event.data.gasLimit}],
+        MessageOutEvent: swapData[${event.data.swapData}]
+      `)
        let data = new Map()
        data.set("orderId", orderId)
        data.set("relay", event.data.relay)
@@ -226,4 +228,4 @@ export class SolChain {
        })
     }
 
-  }
+}
