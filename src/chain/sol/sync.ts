@@ -76,7 +76,7 @@ export class SolChain {
              this.messageOut(event, txHash, trx)
             }
 
-            begin = signs[index].signature;
+            // begin = signs[index].signature;
           }
         } catch (err){
           console.log("solana catch err", err)
