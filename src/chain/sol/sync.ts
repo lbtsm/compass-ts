@@ -88,7 +88,7 @@ export class SolChain {
       }
     }
 
-    crossOut(event:Event, haveBegin:boolean, haveFinish:boolean, txHash:string, trx:VersionedTransactionResponse|null) {
+    async crossOut(event:Event, haveBegin:boolean, haveFinish:boolean, txHash:string, trx:VersionedTransactionResponse|null) {
       if (!haveBegin || !haveFinish) {
         return
       }
@@ -116,7 +116,9 @@ export class SolChain {
           afterBalance[${event.data.afterBalance}],
           receiver[${event.data.orderRecord.receiver}],
           toChain[${event.data.orderRecord.toChainId}],
-          fromChainId[${event.data.orderRecord.fromChainId}]
+          fromChainId[${event.data.orderRecord.fromChainId}],
+          refererId[${event.data.orderRecord.refererId}],
+          feeRatio[${event.data.orderRecord.feeRatio}],
           `
       );
       let data = new Map()
@@ -134,6 +136,8 @@ export class SolChain {
       data.set("toChain", event.data.orderRecord.toChainId)
       data.set("fromChainId", event.data.orderRecord.fromChainId)
       data.set("amountOut", event.data.amountOut)
+      data.set("refererId", event.data.orderRecord.refererId)
+      data.set("feeRatio", event.data.orderRecord.feeRatio)
       let dataStr = JSON.stringify(Object.fromEntries(data))
       var l:Log = {
         ChainId: this.cfg.id,
@@ -149,7 +153,8 @@ export class SolChain {
         LogData: dataStr,
         TxTimestamp: trx?.blockTime || 0,
       }
-      insertMos(l, (err:Error, id: number) => {
+      
+      await insertMos(l, (err:Error, id: number) => {
         if (err) {
           console.log("CrossOut Insert Failed, txHash:", txHash, "err:", err);
           return

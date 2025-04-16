@@ -25,7 +25,7 @@
     {
       "name": "CHAIN_ID",
       "type": "u64",
-      "value": "197710212031"
+      "value": "1360108768460811"
     },
     {
       "name": "NATIVE_MINT",
@@ -412,7 +412,7 @@
             "type": {
               "array": [
                 "u8",
-                8
+                32
               ]
             }
           },
@@ -487,6 +487,22 @@
           {
             "name": "minAmountOut",
             "type": "u128"
+          },
+          {
+            "name": "refererId",
+            "type": {
+              "option": {
+                "vec": "u16"
+              }
+            }
+          },
+          {
+            "name": "feeRatio",
+            "type": {
+              "option": {
+                "vec": "u16"
+              }
+            }
           },
           {
             "name": "bump",
@@ -575,7 +591,7 @@
             "type": {
               "array": [
                 "u8",
-                8
+                32
               ]
             }
           },
@@ -648,6 +664,22 @@
             "type": "u128"
           },
           {
+            "name": "refererId",
+            "type": {
+              "option": {
+                "vec": "u16"
+              }
+            }
+          },
+          {
+            "name": "feeRatio",
+            "type": {
+              "option": {
+                "vec": "u16"
+              }
+            }
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -664,7 +696,7 @@
             "type": {
               "array": [
                 "u8",
-                8
+                32
               ]
             }
           },
@@ -685,7 +717,7 @@
             "type": {
               "array": [
                 "u8",
-                8
+                32
               ]
             }
           },
@@ -731,6 +763,22 @@
           {
             "name": "swapTokenOutMinAmountOut",
             "type": "u64"
+          },
+          {
+            "name": "refererId",
+            "type": {
+              "option": {
+                "vec": "u16"
+              }
+            }
+          },
+          {
+            "name": "feeRatio",
+            "type": {
+              "option": {
+                "vec": "u16"
+              }
+            }
           }
         ]
       }
@@ -745,7 +793,7 @@
             "type": {
               "array": [
                 "u8",
-                8
+                32
               ]
             }
           }
@@ -989,9 +1037,14 @@
       "code": 6011,
       "name": "OrderAlreadyProcessed",
       "msg": "Order already processed"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidRefererInfo",
+      "msg": "Invalid referer info"
     }
   ],
   "metadata": {
-    "address": "B6rMLK5baKzh7uKTX9GnvaX1VLBZ8eYtZoEGpYkvwCVF"
+    "address": "AxjZxsTdG5payyC5fwvnRXwD69xG35bdbRtTMLAefWbn"
   }
 }
