@@ -18,6 +18,7 @@ export interface ChainOpt {
     startBlock: string;
     mcs: string;
     blockConfirmations: string;
+    butterEntrance: string;
 }
 
 
@@ -34,6 +35,7 @@ interface Storage {
 interface Other {
     monitorUrl: string;
     env:string;
+    butter:string;
 }
 
 export function parseConfig(path:string): Config {
