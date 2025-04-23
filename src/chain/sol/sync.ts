@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import { ethers } from "ethers";
 const { Buffer } = require("buffer");
 const crypto = require("crypto");
 import {BorshCoder, EventParser, Event, Program, web3} from "@project-serum/anchor";
@@ -11,11 +12,16 @@ import { insertMos } from '../../storages/mysql/mysql'
 import { sign } from "crypto";
 import { error, time } from "console";
 import { start } from "repl";
+import {
+  requestBridgeData
+} from "../../utils/butter/butter";
 
 export class SolChain {
     cfg:Chain;
-    constructor(cfg:Chain) {
+    butter:string;
+    constructor(cfg:Chain, butter:string) {
       this.cfg = cfg
+      this.butter = butter
     }
 
     getName():string {
@@ -66,7 +72,8 @@ export class SolChain {
               if (event.name == "CrossFinishEvent") {
                   haveFinish = true;
               }
-              this.crossOut(event, haveBegin, haveFinish,txHash, trx)
+              await this.crossOut(event, haveBegin, haveFinish,txHash, connection, trx)
+              await this.crossIn(event, haveBegin, haveFinish,txHash, connection, trx)
             }
              // messageOut
             let outLogs:string[] = trx?.meta?.logMessages!;
@@ -88,10 +95,11 @@ export class SolChain {
       }
     }
 
-    async crossOut(event:Event, haveBegin:boolean, haveFinish:boolean, txHash:string, trx:VersionedTransactionResponse|null) {
+    async crossOut(event:Event, haveBegin:boolean, haveFinish:boolean, txHash:string, conn:web3.Connection, trx:VersionedTransactionResponse|null) {
       if (!haveBegin || !haveFinish) {
         return
       }
+
       let isOut: boolean = ("crossOut" in event.data.crossType)
       if (!isOut) {
         console.log("Ignore tx", txHash, ",tx not crossout event", event.data.crossType)
@@ -121,6 +129,10 @@ export class SolChain {
           feeRatio[${event.data.orderRecord.feeRatio}],
           `
       );
+      if (event.data.amountOut <= 1000000) {
+        console.log("Ignore this tx, beasuce amountOut less than 1U, ", txHash, "amount", event.data.amountOut)
+        return 
+      }
       let data = new Map()
       data.set("orderId", orderId)
       data.set("tokenAmount", event.data.orderRecord.tokenAmount)
@@ -132,12 +144,49 @@ export class SolChain {
       data.set("minAmountOut", event.data.orderRecord.minAmountOut)
       data.set("swapTokenOutBeforeBalance", event.data.orderRecord.swapTokenOutBeforeBalance)
       data.set("afterBalance", event.data.afterBalance)
-      data.set("receiver", event.data.orderRecord.receiver)
       data.set("toChain", event.data.orderRecord.toChainId)
       data.set("fromChainId", event.data.orderRecord.fromChainId)
       data.set("amountOut", event.data.amountOut)
       data.set("refererId", event.data.orderRecord.refererId)
       data.set("feeRatio", event.data.orderRecord.feeRatio)
+      data.set("originReceiver", event.data.orderRecord.receiver)
+      // request swapData
+      let fromToken = new PublicKey(event.data.orderRecord.fromToken)
+      let from = new PublicKey(event.data.orderRecord.from)
+
+      const toTokenBytes = new Uint8Array(32);
+      toTokenBytes.set(event.data.orderRecord.toToken, 0)
+      let toToken = ethers.getAddress(ethers.hexlify(toTokenBytes.slice(0, 20)));
+
+      const receiverBytes = new Uint8Array(32);
+      receiverBytes.set(event.data.orderRecord.receiver, 0)
+      let receiver = ethers.getAddress(ethers.hexlify(receiverBytes.slice(0, 20)))
+      data.set("receiver", receiver)
+
+      // get token decimal 
+      const mintAccountInfo = await conn.getAccountInfo(fromToken);
+      if (!mintAccountInfo?.data) {
+        throw new Error("Token mint account not found");
+      }
+    
+      const beforeAmount = BigInt(event.data.amountOut);
+      const result = ethers.formatUnits(beforeAmount, 6);
+      let ret = await requestBridgeData(this.butter, {
+        entrance: this.cfg.opts.butterEntrance,
+        affiliate: event.data.orderRecord.refererId,
+        fromChainID:  event.data.orderRecord.fromChainId,
+        toChainID: event.data.orderRecord.toChainId,
+        amount: result,
+        tokenInAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        tokenOutAddress: toToken,
+        minAmountOut: event.data.orderRecord.minAmountOut,
+        receiver: receiver,
+        caller: from.toBase58(),
+      })
+      data.set("relay", ret.relay)
+      data.set("swapData", ret.data)
+      data.set("receiver", ret.receiver)
+      console.log("crossOut request bridgeApi back data", ret)
       let dataStr = JSON.stringify(Object.fromEntries(data))
       var l:Log = {
         ChainId: this.cfg.id,
@@ -146,6 +195,83 @@ export class SolChain {
         TxHash: txHash,
         ContractAddres: this.cfg.opts.mcs,
         Topic: "crossOut",
+        BlockNumber: trx?.slot || 0,
+        BlockHash:"",
+        TxIndex: 1,
+        LogIndex: 1,
+        LogData: dataStr,
+        TxTimestamp: trx?.blockTime || 0,
+      }
+      
+      await insertMos(l, (err:Error, id: number) => {
+        if (err) {
+          console.log("CrossOut Insert Failed, txHash:", txHash, "err:", err);
+          return
+        }
+        console.log("CrossOut Insert Success, txHash:", txHash, "id:", id);
+      })
+    }
+
+    async crossIn(event:Event, haveBegin:boolean, haveFinish:boolean, txHash:string, conn:web3.Connection, trx:VersionedTransactionResponse|null) {
+      if (!haveBegin || !haveFinish) {
+        return
+      }
+
+      let isOut: boolean = ("crossIn" in event.data.crossType)
+      if (!isOut) {
+        console.log("Ignore tx", txHash, ",tx not crossIn event", event.data.crossType)
+        return
+      }
+      console.log("Find CrossIn tx", txHash, "slot", trx?.slot, "blockTime",trx?.blockTime)
+      const orderId = Buffer.from(Uint8Array.from(event.data.orderRecord.orderId)).toString("hex");
+      console.log("event.name ------------------- ", event.name)
+      console.log("orderId ------------------ ", orderId)
+      console.log(
+          `
+          CrossInEvent: orderId[${orderId}],
+          amount_out[${event.data.amountOut}],
+          tokenAmount[${event.data.orderRecord.tokenAmount}],
+          from[${event.data.orderRecord.from}],
+          fromToken[${event.data.orderRecord.fromToken}],
+          toToken[${event.data.orderRecord.toToken}],
+          swapTokenOut[${event.data.orderRecord.swapTokenOut}],
+          swapTokenOutMinAmountOut[${event.data.orderRecord.swapTokenOutMinAmountOut}],
+          minAmountOut[${event.data.orderRecord.minAmountOut}],
+          swapTokenOutBeforeBalance[${event.data.orderRecord.swapTokenOutBeforeBalance}],
+          receiver[${event.data.orderRecord.receiver}],
+          toChain[${event.data.orderRecord.toChainId}],
+          fromChainId[${event.data.orderRecord.fromChainId}],
+          refererId[${event.data.orderRecord.refererId}],
+          feeRatio[${event.data.orderRecord.feeRatio}],
+          `
+      );
+
+      let receiver = new PublicKey(event.data.orderRecord.receiver)
+      let data = new Map()
+      data.set("orderId", orderId)
+      data.set("tokenAmount", event.data.orderRecord.tokenAmount)
+      data.set("amountOut", event.data.amountOut)
+      data.set("from", event.data.orderRecord.from)
+      data.set("fromToken", event.data.orderRecord.fromToken)
+      data.set("toToken", event.data.orderRecord.toToken)
+      data.set("swapTokenOut", event.data.orderRecord.swapTokenOut)
+      data.set("swapTokenOutMinAmountOut", event.data.orderRecord.swapTokenOutMinAmountOut)
+      data.set("minAmountOut", event.data.orderRecord.minAmountOut)
+      data.set("swapTokenOutBeforeBalance", event.data.orderRecord.swapTokenOutBeforeBalance)
+      data.set("toChain", event.data.orderRecord.toChainId)
+      data.set("fromChainId", event.data.orderRecord.fromChainId)
+      data.set("refererId", event.data.orderRecord.refererId)
+      data.set("feeRatio", event.data.orderRecord.feeRatio)
+      data.set("receiver", receiver.toBase58())
+      
+      let dataStr = JSON.stringify(Object.fromEntries(data))
+      var l:Log = {
+        ChainId: this.cfg.id,
+        EventId: 124,
+        ProjectId: 7,
+        TxHash: txHash,
+        ContractAddres: this.cfg.opts.mcs,
+        Topic: "crossIn",
         BlockNumber: trx?.slot || 0,
         BlockHash:"",
         TxIndex: 1,
@@ -232,4 +358,18 @@ export class SolChain {
        })
     }
 
+}
+
+function parseMintAccount(data: Buffer): { decimals: number } {
+  return {
+    decimals: data.readUInt8(44),
+  };
+}
+
+function hexToDecimalBigInt(hexStr: string): bigint {
+  return BigInt(`0x${hexStr}`);
+}
+
+function toOneFollowedByZeros(n: number): bigint {
+  return 10n ** BigInt(n);
 }
