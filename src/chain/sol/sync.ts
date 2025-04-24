@@ -129,10 +129,10 @@ export class SolChain {
           feeRatio[${event.data.orderRecord.feeRatio}],
           `
       );
-      if (event.data.amountOut <= 1000000) {
-        console.log("Ignore this tx, beasuce amountOut less than 1U, ", txHash, "amount", event.data.amountOut)
-        return 
-      }
+      // if (event.data.amountOut <= 1000000) {
+      //   console.log("Ignore this tx, beasuce amountOut less than 1U, ", txHash, "amount", event.data.amountOut)
+      //   return 
+      // }
       let data = new Map()
       data.set("orderId", orderId)
       data.set("tokenAmount", event.data.orderRecord.tokenAmount)
