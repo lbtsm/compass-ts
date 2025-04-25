@@ -15,6 +15,8 @@ import { start } from "repl";
 import {
   requestBridgeData
 } from "../../utils/butter/butter";
+import * as bitcoin from 'bitcoinjs-lib';
+import * as address from 'bitcoinjs-lib/src/address';
 
 export class SolChain {
     cfg:Chain;
@@ -129,10 +131,6 @@ export class SolChain {
           feeRatio[${event.data.orderRecord.feeRatio}],
           `
       );
-      // if (event.data.amountOut <= 1000000) {
-      //   console.log("Ignore this tx, beasuce amountOut less than 1U, ", txHash, "amount", event.data.amountOut)
-      //   return 
-      // }
       let data = new Map()
       data.set("orderId", orderId)
       data.set("tokenAmount", event.data.orderRecord.tokenAmount)
@@ -157,10 +155,25 @@ export class SolChain {
       const toTokenBytes = new Uint8Array(32);
       toTokenBytes.set(event.data.orderRecord.toToken, 0)
       let toToken = ethers.getAddress(ethers.hexlify(toTokenBytes.slice(0, 20)));
+      if (toToken == "0x0000000000000000000000000000000000425443") {
+        toToken = "0x425443"
+      }
 
-      const receiverBytes = new Uint8Array(32);
+      const receiverBytes = new Uint8Array(33);
       receiverBytes.set(event.data.orderRecord.receiver, 0)
-      let receiver = ethers.getAddress(ethers.hexlify(receiverBytes.slice(0, 20)))
+      // evm
+      let receiver = ethers.getAddress(ethers.hexlify(receiverBytes.slice(13)))
+      // btc
+      if (event.data.orderRecord.toChainId == 1360095883558913) {
+        let btcBytes = receiverBytes;
+        if (this.isFirst12Zero(receiverBytes) == true) {
+          btcBytes = receiverBytes.slice(12)
+        }
+        let btcAddr = ethers.hexlify(btcBytes)
+        console.log("btcAddr ----------------- ",btcAddr)
+        receiver = this.convertHexToBtcAddress(btcAddr)
+        console.log("btcAddr ----------------- ",receiver)
+      }
       data.set("receiver", receiver)
 
       // get token decimal 
@@ -171,9 +184,10 @@ export class SolChain {
     
       const beforeAmount = BigInt(event.data.amountOut);
       const result = ethers.formatUnits(beforeAmount, 6);
+      let affiliate = mergeArraysWithColon(event.data.orderRecord.refererId, event.data.orderRecord.feeRatio)
       let ret = await requestBridgeData(this.butter, {
         entrance: this.cfg.opts.butterEntrance,
-        affiliate: event.data.orderRecord.refererId,
+        affiliate: affiliate,
         fromChainID:  event.data.orderRecord.fromChainId,
         toChainID: event.data.orderRecord.toChainId,
         amount: result,
@@ -358,6 +372,61 @@ export class SolChain {
        })
     }
 
+    convertHexToBtcAddress(hexStr: string): string {
+      // 参数校验
+      if (!hexStr.startsWith('0x') || hexStr.length < 4) {
+        throw new Error('Hex string must start with 0x and have version prefix');
+      }
+    
+      const versionHex = hexStr.substring(2, 4); // 提取版本标识
+      const hashHex = hexStr.substring(4);       // 提取哈希部分
+      const hash = Buffer.from(hashHex, 'hex');  // 转换为Buffer
+    
+      console.log(hexStr, " -hash.length ----- ", hash.length, " versionHex " , versionHex, " hashHex ", hashHex)
+      // 根据版本号逆向转换
+      switch (versionHex) {
+        // P2PKH 
+        case '01':
+          if (hash.length !== 20) throw new Error('P2PKH requires 20-byte hash');
+          return address.toBase58Check(hash, 0x00); // Base58版本0
+    
+        // P2SH
+        case '05':
+          if (hash.length !== 20) throw new Error('P2SH requires 20-byte hash');
+          return address.toBase58Check(hash, 0x05); // Base58版本5
+    
+        // Bech32 v0 
+        case '00':
+          if (hash.length === 20) {
+            return address.toBech32(hash, 0, 'bc'); // P2WPKH
+          } else if (hash.length === 32) {
+            return address.toBech32(hash, 0, 'bc'); // P2WSH
+          }
+          throw new Error('Bech32 v0 requires 20 or 32-byte hash');
+    
+        // Bech32 v1 
+        case '01':
+          if (hash.length !== 32) throw new Error('P2TR requires 32-byte hash');
+          return address.toBech32(hash, 1, 'bc'); // P2TR (Taproot)
+    
+        default:
+          throw new Error(`Unsupported version prefix: 0x${versionHex}`);
+      }
+    }
+
+    isFirst12Zero(bytes: Uint8Array): boolean {
+      return bytes.length >= 12 && 
+         bytes.slice(0, 12).every(byte => byte === 0);
+    }
+
+}
+
+function mergeArraysWithColon(arr1: string[], arr2: string[]): string[] {
+  const minLength = Math.min(arr1.length, arr2.length);
+  
+  return Array.from({ length: minLength }, (_, i) => 
+    `${arr1[i]}:${arr2[i]}`
+  );
 }
 
 function parseMintAccount(data: Buffer): { decimals: number } {
