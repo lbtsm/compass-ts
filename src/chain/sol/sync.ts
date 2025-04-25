@@ -112,8 +112,7 @@ export class SolChain {
       console.log("event.name ------------------- ", event.name)
       console.log("orderId ------------------ ", orderId)
       console.log(
-          `
-          CrossFinishEvent: orderId[${orderId}],
+          `CrossFinishEvent: orderId[${orderId}],
           amount_out[${event.data.amountOut}],
           tokenAmount[${event.data.orderRecord.tokenAmount}],
           from[${event.data.orderRecord.from}],
@@ -128,8 +127,7 @@ export class SolChain {
           toChain[${event.data.orderRecord.toChainId}],
           fromChainId[${event.data.orderRecord.fromChainId}],
           refererId[${event.data.orderRecord.refererId}],
-          feeRatio[${event.data.orderRecord.feeRatio}],
-          `
+          feeRatio[${event.data.orderRecord.feeRatio}],`
       );
       let data = new Map()
       data.set("orderId", orderId)
@@ -260,7 +258,7 @@ export class SolChain {
           `
       );
 
-      let receiver = new PublicKey(event.data.orderRecord.receiver)
+      let receiver = new PublicKey(event.data.orderRecord.receiver.slice(0,32))
       let data = new Map()
       data.set("orderId", orderId)
       data.set("tokenAmount", event.data.orderRecord.tokenAmount)
