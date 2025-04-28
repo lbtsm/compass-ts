@@ -385,8 +385,13 @@ export class SolChain {
       switch (versionHex) {
         // P2PKH 
         case '01':
-          if (hash.length !== 20) throw new Error('P2PKH requires 20-byte hash');
-          return address.toBase58Check(hash, 0x00); // Base58版本0
+          if (hash.length === 20) {
+            return address.toBase58Check(hash, 0x00); // Base58版本0
+          } else if (hash.length === 32) { // Bech32 v1 
+            return address.toBech32(hash, 1, 'bc'); // P2TR (Taproot)
+          }
+          throw new Error('P2PKH Or P2TR v0 requires 20 or 32-byte hash');
+          
     
         // P2SH
         case '05':
@@ -401,12 +406,6 @@ export class SolChain {
             return address.toBech32(hash, 0, 'bc'); // P2WSH
           }
           throw new Error('Bech32 v0 requires 20 or 32-byte hash');
-    
-        // Bech32 v1 
-        case '01':
-          if (hash.length !== 32) throw new Error('P2TR requires 32-byte hash');
-          return address.toBech32(hash, 1, 'bc'); // P2TR (Taproot)
-    
         default:
           throw new Error(`Unsupported version prefix: 0x${versionHex}`);
       }
