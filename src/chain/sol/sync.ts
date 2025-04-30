@@ -179,9 +179,11 @@ export class SolChain {
       if (!mintAccountInfo?.data) {
         throw new Error("Token mint account not found");
       }
+      const dec = parseMintAccount(mintAccountInfo.data);
+      console.log("mintAccountInfo ", dec.decimals , " fromToken ", fromToken)
     
       const beforeAmount = BigInt(event.data.amountOut);
-      const result = ethers.formatUnits(beforeAmount, 6);
+      const result = ethers.formatUnits(beforeAmount, dec.decimals);
       let affiliate = mergeArraysWithColon(event.data.orderRecord.refererId, event.data.orderRecord.feeRatio)
       let ret = await requestBridgeData(this.butter, {
         entrance: this.cfg.opts.butterEntrance,
@@ -189,7 +191,7 @@ export class SolChain {
         fromChainID:  event.data.orderRecord.fromChainId,
         toChainID: event.data.orderRecord.toChainId,
         amount: result,
-        tokenInAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        tokenInAddress: fromToken.toBase58(),
         tokenOutAddress: toToken,
         minAmountOut: event.data.orderRecord.minAmountOut,
         receiver: receiver,
