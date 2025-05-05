@@ -147,7 +147,7 @@ export class SolChain {
       data.set("feeRatio", event.data.orderRecord.feeRatio)
       data.set("originReceiver", event.data.orderRecord.receiver)
       // request swapData
-      let fromToken = new PublicKey(event.data.orderRecord.fromToken)
+      let swapTokenOut = new PublicKey(event.data.orderRecord.swapTokenOut)
       let from = new PublicKey(event.data.orderRecord.from)
 
       const toTokenBytes = new Uint8Array(32);
@@ -174,14 +174,21 @@ export class SolChain {
       }
       data.set("receiver", receiver)
 
-      // get token decimal 
-      const mintAccountInfo = await conn.getAccountInfo(fromToken);
+      // get ata mint token
+      const mintAccountInfo = await conn.getAccountInfo(swapTokenOut);
       if (!mintAccountInfo?.data) {
         throw new Error("Token mint account not found");
       }
-      const dec = parseMintAccount(mintAccountInfo.data);
-      console.log("mintAccountInfo ", dec.decimals , " fromToken ", fromToken)
+      const mintPubkey = new PublicKey(mintAccountInfo.data.slice(0, 32)); 
+      console.log("bridgeToken is ----------------- ", mintPubkey.toBase58())
     
+      // get token decimal
+      const bridgeTokenInfo = await conn.getAccountInfo(mintPubkey);
+      if (!bridgeTokenInfo?.data) {
+        throw new Error("Bridge Token mint account not found");
+      }
+      const dec = parseMintAccount(bridgeTokenInfo.data);
+      console.log("mintAccountInfo ", dec.decimals , " swapTokenOut ", swapTokenOut, " bridgeToken ", mintPubkey.toBase58())
       const beforeAmount = BigInt(event.data.amountOut);
       const result = ethers.formatUnits(beforeAmount, dec.decimals);
       let affiliate = mergeArraysWithColon(event.data.orderRecord.refererId, event.data.orderRecord.feeRatio)
@@ -191,7 +198,7 @@ export class SolChain {
         fromChainID:  event.data.orderRecord.fromChainId,
         toChainID: event.data.orderRecord.toChainId,
         amount: result,
-        tokenInAddress: fromToken.toBase58(),
+        tokenInAddress: mintPubkey.toBase58(),
         tokenOutAddress: toToken,
         minAmountOut: event.data.orderRecord.minAmountOut,
         receiver: receiver,
