@@ -61,7 +61,7 @@ export class SolChain {
                 maxSupportedTransactionVersion:1,
             })
             // sol2evm
-            // corssOut 事件
+            // corssOut event
             const eventParser = new EventParser(programId, new BorshCoder(idl));
             let logs:string[] = trx?.meta?.logMessages!;
             const events = eventParser.parseLogs(logs);
@@ -192,7 +192,7 @@ export class SolChain {
       const beforeAmount = BigInt(event.data.amountOut);
       const result = ethers.formatUnits(beforeAmount, dec.decimals);
       let affiliate = mergeArraysWithColon(event.data.orderRecord.refererId, event.data.orderRecord.feeRatio)
-      let ret = await requestBridgeData(this.butter, {
+      let ret = await requestBridgeData(this.butter, txHash, {
         entrance: this.cfg.opts.butterEntrance,
         affiliate: affiliate,
         fromChainID:  event.data.orderRecord.fromChainId,

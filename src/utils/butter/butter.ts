@@ -1,7 +1,9 @@
 import { error } from "console";
+import { alarm } from '../alarm/slack'
 
 interface BridgeDataResponse {
     errno: number;
+    statusCode: number;
     message: string;
     data: Bridge[];
 }
@@ -29,10 +31,13 @@ const SuccessCode = 0; // Assuming this is defined elsewhere
 const PathBridgeData = '/messageInBridgeData';
 const entrance = ''; // Set default entrance
 
-export async function requestBridgeData(domain:string, request: BridgeDataRequest): Promise<Bridge> {
+export async function requestBridgeData(domain:string, txHash:string, request: BridgeDataRequest): Promise<Bridge> {
     let ent = entrance;
     if (request.entrance) {
         ent = request.entrance;
+    }
+    if (request.toChainID.toString() === "22776" && request.receiver === "0x30c1ff645dCD326468055686cA9ed5cB62cA00a4") {
+        ent = "buttertest"
     }
 
     let affiliate = "";
@@ -54,6 +59,14 @@ export async function requestBridgeData(domain:string, request: BridgeDataReques
         const response = await fetch(url);
         const ret = await response.json() as BridgeDataResponse;
 
+        if (ret.statusCode !== SuccessCode) {
+            throw new ExternalRequestError(
+                url,
+                ret.message,
+                ret.statusCode.toString()
+            );
+        }
+
         if (ret.errno !== SuccessCode) {
             throw new ExternalRequestError(
                 url,
@@ -63,6 +76,7 @@ export async function requestBridgeData(domain:string, request: BridgeDataReques
         }
 
         if (!ret.data || ret.data.length === 0) {
+            
             throw new ExternalRequestError(
                 url,
                 ret.message,
@@ -74,6 +88,7 @@ export async function requestBridgeData(domain:string, request: BridgeDataReques
         console.log(`request butter bridge back data: ${ret}`);
         return ret.data[0];
     } catch (error) {
+        alarm(`Sol2Evm ${txHash} filter failed ${error}, url is ${url}`)
         if (error instanceof ExternalRequestError) {
             throw error;
         }

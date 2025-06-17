@@ -1,4 +1,5 @@
 import { delay } from './utils/time'
+import { initAlarm } from './utils/alarm/slack'
 import { parseConfig } from './config/config'
 import { initChain } from './chain/chain'
 import { initDb } from './storages/mysql/mysql'
@@ -24,6 +25,8 @@ async function main() {
   // step2: parse config
   let cfg = parseConfig(configPath)
   console.log("Parse config scuuess")
+  // step 2.1 init alarm
+  initAlarm(cfg.other.env, cfg.other.monitorUrl)
   // step3: init storage
   initDb(cfg.storages[0].user,cfg.storages[0].psw, cfg.storages[0].db,  cfg.storages[0].host, cfg.storages[0].port)
   console.log("Init db pool success")
