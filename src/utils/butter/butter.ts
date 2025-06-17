@@ -59,7 +59,7 @@ export async function requestBridgeData(domain:string, txHash:string, request: B
         const response = await fetch(url);
         const ret = await response.json() as BridgeDataResponse;
 
-        if (ret.statusCode !== SuccessCode) {
+        if (!isUndefined(ret.statusCode) && ret.statusCode !== SuccessCode) {
             throw new ExternalRequestError(
                 url,
                 ret.message,
@@ -76,7 +76,6 @@ export async function requestBridgeData(domain:string, txHash:string, request: B
         }
 
         if (!ret.data || ret.data.length === 0) {
-            
             throw new ExternalRequestError(
                 url,
                 ret.message,
@@ -99,6 +98,10 @@ export async function requestBridgeData(domain:string, txHash:string, request: B
             error instanceof Error ? error : undefined
         );
     }
+}
+
+function isUndefined(value: any): value is undefined {
+  return value === undefined;
 }
 
 class ExternalRequestError extends Error {

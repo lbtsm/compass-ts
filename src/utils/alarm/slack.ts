@@ -1,17 +1,18 @@
 import { error } from "console";
 
-// 定义全局变量
+// global var
 let prefix: string = "";
 let hooksUrl: string = "";
 const alarmMap: Map<string, number> = new Map();
 
-// 初始化函数
+// init
 export function initAlarm(env: string, hooks: string): void {
   prefix = env;
   hooksUrl = hooks;
+  console.log("env ", env, " hooks", hooks)
 }
 
-// 告警函数
+// alarm function
 export async function alarm(msg: string, ctx?: AbortSignal): Promise<void> {
   if (!hooksUrl) {
     console.info("hooks is empty");
