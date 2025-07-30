@@ -25,6 +25,7 @@ interface BridgeDataRequest {
     minAmountOut: string;
     receiver: string;
     caller: string;
+    entranceId: string;
 }
 
 const SuccessCode = 0; // Assuming this is defined elsewhere
@@ -32,14 +33,6 @@ const PathBridgeData = '/messageInBridgeData';
 const entrance = ''; // Set default entrance
 
 export async function requestBridgeData(domain:string, txHash:string, request: BridgeDataRequest): Promise<Bridge> {
-    let ent = entrance;
-    if (request.entrance) {
-        ent = request.entrance;
-    }
-    if (request.toChainID.toString() === "22776" && request.receiver === "0x30c1ff645dCD326468055686cA9ed5cB62cA00a4") {
-        ent = "buttertest"
-    }
-
     let affiliate = "";
     if (request.affiliate && request.affiliate.length > 0) {
         affiliate = request.affiliate
@@ -50,7 +43,7 @@ export async function requestBridgeData(domain:string, txHash:string, request: B
     const params = `fromChainId=${request.fromChainID}&caller=${request.caller}&toChainId=${request.toChainID}&amount=${request.amount}` +
         `&tokenInAddress=${request.tokenInAddress}&tokenOutAddress=${request.tokenOutAddress}` +
         `&minAmountOut=${request.minAmountOut}&receiver=${request.receiver}` +
-        `&entrance=${encodeURIComponent(ent)}&${affiliate}`;
+        `&entranceId=${request.entranceId}&${affiliate}`;
 
     const url = `${domain}${PathBridgeData}?${params}`;
     console.log(`request butter bridge data url: ${url}`);

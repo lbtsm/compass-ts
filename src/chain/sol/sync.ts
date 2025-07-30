@@ -191,6 +191,10 @@ export class SolChain {
       console.log("mintAccountInfo ", dec.decimals , " swapTokenOut ", swapTokenOut, " bridgeToken ", mintPubkey.toBase58())
       const beforeAmount = BigInt(event.data.amountOut);
       const result = ethers.formatUnits(beforeAmount, dec.decimals);
+      let entranceId = "9";
+      if (event.data.orderRecord.refererId.length > 0) {
+        entranceId = event.data.orderRecord.refererId[0]
+      }
       let affiliate = mergeArraysWithColon(event.data.orderRecord.refererId, event.data.orderRecord.feeRatio)
       let ret = await requestBridgeData(this.butter, txHash, {
         entrance: this.cfg.opts.butterEntrance,
@@ -203,6 +207,7 @@ export class SolChain {
         minAmountOut: event.data.orderRecord.minAmountOut,
         receiver: receiver,
         caller: from.toBase58(),
+        entranceId:entranceId,
       })
       data.set("relay", ret.relay)
       data.set("swapData", ret.data)
