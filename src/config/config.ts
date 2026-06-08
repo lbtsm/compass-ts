@@ -36,6 +36,7 @@ interface Other {
     monitorUrl: string;
     env:string;
     butter:string;
+    butterApiKey?: string;
 }
 
 export function parseConfig(path:string): Config {
