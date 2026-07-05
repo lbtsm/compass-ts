@@ -60,7 +60,7 @@ export class SolEventHandler {
     let data = new Map()
     data.set("orderId", orderId)
     data.set("user", normalizeEventValue(event.data.user))
-    data.set("from", normalizeEventValue(event.data.user))
+    data.set("from", publicKeyToBytes(event.data.user))
     data.set("fromChain", normalizeEventValue(event.data.from_chain))
     data.set("fromChainId", normalizeEventNumberHex(event.data.from_chain))
     data.set("toChain", normalizeEventNumberHex(event.data.to_chain))
@@ -189,7 +189,6 @@ export class SolEventHandler {
     data.set("from", publicKeyToBytes(event.data.user))
     data.set("fromToken", zeroBytes(32))
     if (event.data.from_chain !== undefined) {
-      data.set("fromChain", normalizeEventValue(event.data.from_chain))
       data.set("fromChainId", normalizeEventValue(event.data.from_chain))
     } else {
       data.set("fromChainId", "00")
