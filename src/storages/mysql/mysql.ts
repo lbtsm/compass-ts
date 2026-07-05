@@ -47,6 +47,13 @@ export const insertMos = (log: Log, callback?: InsertCallback): Promise<number> 
           connection.release();
 
           if (queryError) {
+            if (isDuplicateEntryError(queryError)) {
+              console.log("Skip duplicate mos log, txHash:", log.TxHash, "err:", queryError.message);
+              callback?.(null, 0);
+              resolve(0);
+              return;
+            }
+
             callback?.(queryError);
             reject(queryError);
             return;
@@ -60,3 +67,8 @@ export const insertMos = (log: Log, callback?: InsertCallback): Promise<number> 
     });
   });
 };
+
+function isDuplicateEntryError(error: Error): boolean {
+  const mysqlError = error as Error & { code?: string; errno?: number };
+  return mysqlError.code === "ER_DUP_ENTRY" || mysqlError.errno === 1062;
+}

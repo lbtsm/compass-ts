@@ -81,7 +81,7 @@ export class SolEventHandler {
 
     const toTokenBytes = new Uint8Array(32);
     toTokenBytes.set(event.data.to_token, 0)
-    let toToken = ethers.getAddress(ethers.hexlify(toTokenBytes.slice(0, 20)));
+    let toToken = ethers.getAddress(ethers.hexlify(toTokenBytes.slice(12)));
     if (toToken == "0x0000000000000000000000000000000000425443") {
       toToken = "0x425443"
     }
@@ -226,6 +226,9 @@ export class SolEventHandler {
     data.set("refererId", null)
     data.set("feeRatio", null)
     data.set("receiver", normalizeEventValue(event.data.user))
+    if (event.name === "RefundEvent") {
+      data.set("isrefund", true)
+    }
 
     let dataStr = JSON.stringify(Object.fromEntries(data))
     var l: Log = {
