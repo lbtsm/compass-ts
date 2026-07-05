@@ -62,17 +62,17 @@ export class SolEventHandler {
     data.set("user", normalizeEventValue(event.data.user))
     data.set("from", normalizeEventValue(event.data.user))
     data.set("fromChain", normalizeEventValue(event.data.from_chain))
-    data.set("fromChainId", normalizeEventValue(event.data.from_chain))
-    data.set("toChain", normalizeEventValue(event.data.to_chain))
+    data.set("fromChainId", normalizeEventNumberHex(event.data.from_chain))
+    data.set("toChain", normalizeEventNumberHex(event.data.to_chain))
     data.set("bridgeMint", normalizeEventValue(event.data.bridge_mint))
     data.set("bridgeAmount", normalizeEventValue(event.data.bridge_amount))
-    data.set("tokenAmount", normalizeEventValue(event.data.bridge_amount))
+    data.set("tokenAmount", normalizeEventNumberHex(event.data.bridge_amount))
     data.set("toToken", normalizeEventValue(event.data.to_token))
     data.set("receiver", normalizeEventValue(event.data.receiver))
-    data.set("minAmountOut", normalizeEventValue(event.data.min_amount_out))
-    data.set("swapTokenOutMinAmountOut", normalizeEventValue(event.data.min_amount_out))
+    data.set("minAmountOut", normalizeEventNumberHex(event.data.min_amount_out))
+    data.set("swapTokenOutMinAmountOut", normalizeEventNumberHex(event.data.min_amount_out))
     data.set("fromToken", normalizeEventValue(event.data.source_token))
-    data.set("amountOut", normalizeEventValue(event.data.source_amount))
+    data.set("amountOut", normalizeEventNumberHex(event.data.source_amount))
     data.set("refererId", normalizeEventValue(event.data.referer_id))
     data.set("feeRatio", normalizeEventValue(event.data.fee_ratio))
     data.set("originReceiver", normalizeEventValue(event.data.receiver))
@@ -268,6 +268,14 @@ function normalizeEventValue(value: any): any {
     return value.map(normalizeEventValue);
   }
   return value;
+}
+
+function normalizeEventNumberHex(value: any): string {
+  if (value === null || value === undefined) {
+    return "00";
+  }
+  const hex = BigInt(value.toString()).toString(16);
+  return hex.length % 2 === 0 ? hex : `0${hex}`;
 }
 
 function publicKeyToBytes(value: PublicKey | undefined): number[] {
