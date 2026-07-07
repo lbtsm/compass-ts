@@ -61,7 +61,7 @@ export class SolEventHandler {
     data.set("orderId", orderId)
     data.set("user", normalizeEventValue(event.data.user))
     data.set("from", publicKeyToBytes(event.data.user))
-    data.set("fromChain", normalizeEventValue(event.data.from_chain))
+    data.set("fromChain", normalizeEventNumberHex(event.data.from_chain))
     data.set("fromChainId", normalizeEventNumberHex(event.data.from_chain))
     data.set("toChain", normalizeEventNumberHex(event.data.to_chain))
     data.set("bridgeMint", normalizeEventValue(event.data.bridge_mint))
