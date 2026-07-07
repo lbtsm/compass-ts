@@ -189,7 +189,7 @@ export class SolEventHandler {
     data.set("from", publicKeyToBytes(event.data.user))
     data.set("fromToken", zeroBytes(32))
     if (event.data.from_chain !== undefined) {
-      data.set("fromChainId", normalizeEventValue(event.data.from_chain))
+      data.set("fromChainId", normalizeEventNumberHex(event.data.from_chain))
     } else {
       data.set("fromChainId", "00")
     }
