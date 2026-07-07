@@ -195,8 +195,8 @@ export class SolEventHandler {
     }
     data.set("bridgeMint", normalizeEventValue(event.data.bridge_mint))
     if (event.data.bridge_amount !== undefined) {
-      data.set("bridgeAmount", normalizeEventValue(event.data.bridge_amount))
-      data.set("tokenAmount", normalizeEventValue(event.data.bridge_amount))
+      data.set("bridgeAmount", normalizeEventNumberHex(event.data.bridge_amount))
+      data.set("tokenAmount", normalizeEventNumberHex(event.data.bridge_amount))
     } else {
       data.set("tokenAmount", "00")
     }
@@ -213,15 +213,15 @@ export class SolEventHandler {
       data.set("amountOut", normalizeEventNumberHex(event.data.amount_out))
     }
     if (event.data.signed_min_amount_out !== undefined) {
-      data.set("signedMinAmountOut", normalizeEventValue(event.data.signed_min_amount_out))
-      data.set("minAmountOut", normalizeEventValue(event.data.signed_min_amount_out))
-      data.set("swapTokenOutMinAmountOut", normalizeEventValue(event.data.signed_min_amount_out))
+      data.set("signedMinAmountOut", normalizeEventNumberHex(event.data.signed_min_amount_out))
+      data.set("minAmountOut", normalizeEventNumberHex(event.data.signed_min_amount_out))
+      data.set("swapTokenOutMinAmountOut", normalizeEventNumberHex(event.data.signed_min_amount_out))
     } else {
       data.set("minAmountOut", "00")
       data.set("swapTokenOutMinAmountOut", "00")
     }
     if (event.data.effective_min_amount_out !== undefined) {
-      data.set("effectiveMinAmountOut", normalizeEventValue(event.data.effective_min_amount_out))
+      data.set("effectiveMinAmountOut", normalizeEventNumberHex(event.data.effective_min_amount_out))
     }
     data.set("refererId", null)
     data.set("feeRatio", null)
