@@ -207,10 +207,10 @@ export class SolEventHandler {
       data.set("toToken", publicKeyToBytes(event.data.bridge_mint))
     }
     if (event.data.amount !== undefined) {
-      data.set("amount", normalizeEventValue(event.data.amount))
+      data.set("amount", normalizeEventNumberHex(event.data.amount))
     }
     if (event.data.amount_out !== undefined) {
-      data.set("amountOut", normalizeEventValue(event.data.amount_out))
+      data.set("amountOut", normalizeEventNumberHex(event.data.amount_out))
     }
     if (event.data.signed_min_amount_out !== undefined) {
       data.set("signedMinAmountOut", normalizeEventValue(event.data.signed_min_amount_out))
