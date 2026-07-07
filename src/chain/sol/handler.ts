@@ -66,7 +66,7 @@ export class SolEventHandler {
     data.set("toChain", normalizeEventNumberHex(event.data.to_chain))
     data.set("bridgeMint", normalizeEventValue(event.data.bridge_mint))
     data.set("bridgeAmount", normalizeEventValue(event.data.bridge_amount))
-    data.set("tokenAmount", normalizeEventNumberHex(event.data.bridge_amount))
+    data.set("tokenAmount", normalizeEventNumberHex(event.data.source_amount))
     data.set("toToken", normalizeEventValue(event.data.to_token))
     data.set("receiver", normalizeEventValue(event.data.receiver))
     data.set("minAmountOut", normalizeEventNumberHex(event.data.min_amount_out))
